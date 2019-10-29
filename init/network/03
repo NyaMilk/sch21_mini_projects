@@ -1,0 +1,6 @@
+# Определите MAC address карты Wi-Fi
+
+ifconfig en1 | grep "ether" | cut -d " " -f2
+
+# второй вариант: networksetup -listallhardwareports | grep "Wi-Fi" -A2
+# -A: печатать количество строк конечного контекста после каждого совпадения

@@ -1,0 +1,19 @@
+#!/bin/bash
+if [ $# -gt 0 ]
+then
+for filename in $@
+do
+count=1
+IFS="\n"
+echo "-------"
+while read line
+do
+echo "Line $count: $line"
+count="$(( $count + 1 ))"
+done < $filename
+done
+else
+echo "usage: sh 03 <file_name>"
+fi
+
+# напишите свой скрипт

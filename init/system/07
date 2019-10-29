@@ -1,0 +1,5 @@
+# Выясните PID службы SSHD
+
+pidof sshd
+
+# второй вариант: cat /var/run/sshd.pid

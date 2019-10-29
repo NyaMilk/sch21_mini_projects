@@ -1,0 +1,6 @@
+# Определите и отобразите характеристики интерфейса Ethernet:
+# (а) Определить broadcast address
+# (b) Определите все IP adresses, которые являются частью одной подсети.
+
+(а) ifconfig en0 | grep "broadcast" | cut -d " " -f6
+(b) ping broadcast > arp -a

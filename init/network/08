@@ -1,0 +1,6 @@
+# Найти провайдера slash16.org
+
+Команда: whois slash16.org | grep "Name Server"
+Сайт: https://whoer.net/ru/checkwhois
+
+# Amazon Web Services (AWS)
