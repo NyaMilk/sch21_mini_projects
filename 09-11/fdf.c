@@ -1,4 +1,23 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   fdf.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mgrass <mgrass@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/11/09 14:21:20 by mgrass            #+#    #+#             */
+/*   Updated: 2019/11/10 19:23:33 by mgrass           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "fdf.h"
+
+int			key_press(int keycode, void *param)//закрывает окошко пр  нажатии клавиши еск.Возможно нужно переделать
+{
+    if(!param && keycode == 53)
+        exit(0);
+    return (0);
+}
 
 void		error_out(void)
 {
@@ -81,14 +100,14 @@ void		get_color(char *tmp, t_fdf *lst)
 	char	**ptr;
 
 	ptr = ft_strsplit(tmp, ',');
-	printf("split ptr0: %s\n", ptr[0]);
-	printf("split ptr1: %s\n", ptr[1]);
+	// printf("split ptr0: %s\n", ptr[0]);
+	// printf("split ptr1: %s\n", ptr[1]);
 	if (ptr[1])
 	{
 		lst->z = ft_atoi(ptr[0]);
-		printf("->z: %d\n", lst->z);
+		// printf("->z: %d\n", lst->z);
 		lst->color = ft_atoi_base(ptr[1] + 2, 16);
-		printf("->color: %d\n", lst->color);
+		// printf("->color: %d\n", lst->color);
 	}
 }
 
@@ -96,16 +115,16 @@ void		create_map(t_fdf *lst)
 {
 	char	*line;
 	char	**tmp;
-	int 	x;
-	int 	y;
-	
+	int		x;
+	int		y;
+
 	y = 0;
-	while((get_next_line(lst->fd, &line)) == 1)
+	while ((get_next_line(lst->fd, &line)) == 1)
 	{
 		x = 0;
 		tmp = ft_strsplit(line, ' ');
 		lst->map[y] = ft_memalloc(sizeof(int) * lst->x);
-		printf("-----\n");
+		// printf("-----\n");
 		while (tmp[x])
 		{
 			get_color(tmp[x], lst);
@@ -114,7 +133,6 @@ void		create_map(t_fdf *lst)
 		}
 		free(tmp);
 		y++;
-
 	}
 }
 
@@ -128,8 +146,8 @@ t_fdf		*read_file(char *s)
 	lst->x = 0;
 	lst->y = 0;
 	lst->name = s;
-	// lst->mlx_ptr = mlx_init();
-	// lst->win_ptr = mlx_new_window(lst->mlx_ptr, WIDTH, HEIGHT, "little_cat");
+	lst->mlx_ptr = mlx_init();
+	lst->win_ptr = mlx_new_window(lst->mlx_ptr, WIDTH, HEIGHT, "little_cat");
 	if ((lst->fd = open(s, O_RDONLY)) < 0)
 		error_out();
 	while ((get_next_line(lst->fd, &line)) == 1)
@@ -140,10 +158,10 @@ t_fdf		*read_file(char *s)
 	lst->map = ft_memalloc(sizeof(int *) * lst->y);
 	close(lst->fd);
 	lst->fd = open(lst->name, O_RDONLY);
-	return(lst);
+	return (lst);
 }
 
-// -----проверка чтения карты-----
+// ----- проверка чтения карты -----
 char		print_map(t_fdf *lst)
 {
 	int		x;
@@ -173,13 +191,16 @@ int			main(int ac, char **av)
 	if (!(lst = read_file(av[1])))
 		error_out();
 	create_map(lst);
-
-	// -----проверка чтения карты-----
-	print_map(lst);
-	printf("->z: %d\n", lst->z);
-
-	// draw(lst);
-	// mlx_key_hook(lst->win_ptr, key_press, lst);
-	// mlx_loop(lst->mlx_ptr);
+	
+	// ----- проверка чтения карты -----
+	// print_map(lst);
+	
+	//----- удалить -----
+	lst->size_map = 20;
+	
+	draw_map(lst);
+	print_menu(lst);
+	mlx_hook(lst->win_ptr, 2, 0, key_press, ((void *)0));
+	mlx_loop(lst->mlx_ptr);
 	return (0);
 }

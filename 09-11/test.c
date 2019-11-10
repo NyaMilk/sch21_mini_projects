@@ -1,219 +1,503 @@
-#include "test.h"
+#include "minilib/mlx.h"
 
-void		ft_error(char *msg)
+#include "libft/includes/libft.h"
+#include <fcntl.h>
+
+#define BUF_SIZE 500
+
+
+
+#include <stdio.h>
+#include <unistd.h>
+#include <math.h>
+
+typedef struct          s_fdf
 {
-	if (msg != NULL)
-	{
-		ft_putstr(msg);
-		ft_putchar('\n');
-	}
-	exit(1);
-}
+    void                *win_ptr;
+    void                *mlx_ptr;
+    void                *img_ptr;
+    int                 *img_data;
+    char                dimension;
+    int                 **array;
+    int                 step;
+    int                 bpp;
+    int                 endian;
+    int                 size_line;
+    int                 x_start;
+    int                 y_start;
+    int                 **colors;
+    double              x_rotate;
+    double              y_rotate;
+    double              z_rotate;
+}                       t_fdf;
 
-int		check_color(char *line)
-{
-	int	i;
-
-	i = 0;
-	// printf("linecolor: %s\n", line);
-	line++;
-	// printf("linecolor2: %s\n", line);
-	if (*line && *line != '0')
-		ft_error("ERROR color");
-	line++;
-	i++;
-	if (*line && *line != 'x')
-		ft_error("ERROR color");
-	line++;
-	i++;
-	while (*line && *line != ' ')
-	{
-		if ((*line < 'A' || *line > 'F') && (*line < 'a' || *line > 'f') &&
-				(*line < '0' || *line > '9'))
-			ft_error("ERROR color");
-		line++;
-		i++;
-	}
-	// printf("i: %d\n", i);
-	if (i != 8 && i != 6 && i != 4)
-		ft_error("ERROR color");
-	return (i);
-}
-
-void		check_line(char *line)
-{
-	while (*line)
-	{
-		// printf("line start: %s\n", line);
-		while (*line && *line == ' ')
-			line++;
-		if (*line == '-')
-			line++;
-		// printf("line: %s\n", line);
-		if (*line < '0' || *line > '9')
-			ft_error("ERROR line");
-		while (*line != '\0' && *line >= '0' && *line <= '9')
-			line++;
-		// if (*line == '\0')
-		// 	break ;
-		// printf("line: %s\n", line);
-		if (*line == ',')
-			line += check_color(&(*line)) + 1;
-		// printf("line2: %s\n", line);
-		// if (*line == '\0')
-		// 	break ;
-		if (*line && *line != ' ')
-			ft_error("ERROR line");
-		while (*line && *line == ' ')
-			line++;
-	}
-}
-
-static int	init_tab(t_info *info, char *line)
-{
-	int		x;
-	char	**tab;
-
-	x = 0;
-	check_line(line);
-	tab = ft_strsplit(line, ' ');
-	// printf("split: %s\n", tab[2]);
-	// printf("->color: %d\n", color);
-	while (tab[x])
-		free(tab[x++]);
-	// printf("x: %d\n", x);
-	// printf("y: %d\n", info->lines);
-	if (info->lines == 0)
-	{
-		info->rows = x;
-		// printf("rows: %d\n", info->rows);
-	}
-	else
-	{
-		// printf("xer: %d\n", info->rows);
-		// printf("yer: %d\n", x);
-		if (x != info->rows)
-			return (-1);
-	}
-	free(line);
-	free(tab);
-	info->lines++;
-	return (0);
-}
-
-static void	init_info(t_info *info)
-{
-	char	*line;
-
-	line = NULL;
-	info->lines = 0;
-	info->rows = 0;
-	while ((get_next_line(info->fd, &line)) == 1)
-	{
-		if (init_tab(info, line) == -1)
-			ft_error("ERR: The number of elements per line aren't consistent");
-	}
-	info->map = ft_memalloc(sizeof(int*) * info->lines);
-	close(info->fd);
-	info->fd = open(info->name, O_RDONLY);
-}
-
-void get_color(char *tmp, t_info *info)
-{
-	char **ptr;
-
-	ptr = ft_strsplit(tmp, ',');
-	printf("splitptr: %s\n", ptr[0]);
-	if (ptr[1])
-	{
-		info->color = ft_atoi_base(ptr[1] + 1, 16);
-		printf("->color: %d\n", info->color);
-	}
-	// else
-	// 	info->color = 0xFF0000;
-
-}
-
-void		parser(t_info *info)
-{
-	char	*line;
-	char	**tab;
-	int 	x;
-	int 	y;
-	
-	y = 0;
-	init_info(info);
-	while ((get_next_line(info->fd, &line)) == 1)
-	{
-		x = 0;
-		tab = ft_strsplit(line, ' ');
-	// printf("splittab: %s\n", tab[2]);
-		info->map[y] = ft_memalloc(sizeof(int) * info->rows);
-	printf("111\n");
-		while (tab[x])
-		{
-			get_color(tab[x], info);
-			info->map[y][x] = ft_atoi(tab[x]);
-			free(tab[x]);
-			x++;
-			// printf("->color: %d\n", info->color);
-		}
-		free(tab);
-		y++;
-	}
-	// printf("while: %d\n", info->map[2][2]);
-	// if (x[2] == -1)
-	// 	ft_error("ERROR: get_next_line returned <:-1:>");
-}
-
-t_info			*info_init(char	*path)
-{
-	t_info	*a;
-
-	// a = NULL;
-	a = (t_info *)malloc(sizeof(t_info));
-	a->name = path;
-	// a->mlx = mlx_init();
-	// a->win = mlx_new_window(a->mlx, WIDTH, HEIGHT, "FdF");
-	a->fd = open(path, O_RDONLY);
-	// printf("%s\n", path);
-	if (a->fd <= 2)
-		ft_error(ft_strjoin("No file ", path));
-	return (a);
-}
-
-char print_map(t_info *a)
+void  erace_img(t_fdf *fdf)
 {
     int i;
-	int j;
-	i = 0;
-	j = 0;
-	while (i < a->lines)
-	{
-		j = 0;
-		while (j < a->rows)
-		{
-			printf("%d ", a->map[i][j]);
-			j++;
-		}
-		printf("\n");
-		i++;
-	}
-	return (0);
+
+    i = 0;
+    while(i != 1000000-1)
+    {
+        (fdf->img_data)[i] = 0x000000;
+
+        i++;
+    }
+    mlx_put_image_to_window(fdf->mlx_ptr,fdf->win_ptr,fdf->img_ptr, 0, 0);
 }
 
-int				main(int ac, char **av)
+void make_line(int x_start, int y_start, int x_end, int y_end, int *img_data, int color)
 {
-	t_info	*a;
+    int x,y,dx,dy,dx1,dy1,px,py,xe,ye;
+    dx = x_end -x_start;
+    dy = y_end -y_start;
 
-	if (ac != 2)
-		ft_error("Usage: ./fdf filename");
-	a = info_init(av[1]);
-	parser(a);
-	// a->frame = 0;
-	// draw(a);
-	// mlx_key_hook(a->win, &ft_keypress_hook, a);
-	// mlx_loop(a->mlx);
-    print_map(a);
-	// printf("col: %d\n", a->color);
+    dx1 = abs(dx);
+    dy1 = abs(dy);
+    px = 2 * dy1 - dx1;
+    py = 2 * dx1 - dy1;
+    if (dy1 <= dx1)
+    {
+        if (dx >=0)
+        {
+            x = x_start;
+            y = y_start;
+            xe = x_end;
+        }
+        else
+        {
+            x = x_end;
+            y = y_end;
+            xe = x_start;
+        }
+        //img_data[y * 1000 + x] = color;
+        img_data[y * 1000 + x] = 0xcdcd00;
+        while (x < xe) {
+            x+=1;
+            if (px < 0)
+                px = px + 2 * dy1;
+            else {
+                if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0))
+                    y += 1;
+                else
+                    y -= 1;
+                px = px + 2 * (dy1 - dx1);
+
+            }
+            img_data[y * 1000 + x] = color;
+        }
+    }
+    else {
+        if (dy >= 0) {
+            x = x_start;
+            y = y_start;
+            ye = y_end;
+        } else {
+            x = x_end;
+            y = y_end;
+            ye = y_start;
+        }
+        //img_data[y * 1000 + x] = color;
+        img_data[y * 1000 + x] = 0xcdcd00;
+        while (y < ye) {
+            y += 1;
+            if (py <= 0)
+                py = py + 2 * dx1;
+            else {
+                if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0))
+                    x += 1;
+                else
+                    x -= 1;
+                py = py + 2 * (dx1 - dy1);
+            }
+            img_data[y * 1000 + x] = color;
+        }
+    }
+}
+
+
+
+static void x_rotate(int *y, int *z, t_fdf *fdf)//num0
+{
+    int previous_y;
+    int previous_z;
+
+    previous_z = *z;
+    previous_y = *y;
+    *y = previous_y * cos(fdf->x_rotate) + previous_y * sin(fdf->x_rotate);
+    *z = -previous_z * sin(fdf->x_rotate) + previous_z * cos(fdf->x_rotate);
+
+   fdf->x_rotate += (0.0001);
+}
+
+static void y_rotate(int *x,int *z, t_fdf *fdf)
+{
+    int     previous_x;
+    int     previous_z;
+
+    previous_x = *x;
+    previous_z = *z;
+    *x = previous_x * cos(fdf->y_rotate) - previous_x * sin(fdf->y_rotate);
+    *z = previous_z * sin(fdf->y_rotate) + previous_z * cos(fdf->y_rotate);
+    fdf->y_rotate+=(0.00001);
+}
+
+static void z_rotate(int *x, int *y, t_fdf *fdf)
+{
+    int previous_x;
+    int previous_y;
+
+    previous_x = *x;
+    previous_y = *y;
+    *x = previous_x * cos(fdf->z_rotate) + previous_x * sin(fdf->z_rotate);
+    *y = -previous_y * sin(fdf->z_rotate) + previous_y * cos(fdf->z_rotate);
+    fdf->z_rotate+=(0.00001);
+}
+/*
+static void iso(int *x, int *y, int z)
+{
+    int previous_x;
+    int previous_y;
+    previous_x = *x;
+    previous_y = *y;
+    *x = (previous_x - previous_y) * cos(0.523599);
+    *y = -z + (previous_x + previous_y) * sin(0.523599);
+}
+*/
+void    make_horizontal_line(t_fdf *fdf, int x_start, int y_start, int z, int next_z)
+{
+    int y_end;
+    int x_end;
+    int rotate_x;
+    int rotate_y;
+    int rotate_z;
+    int rotate_z_next;
+
+    y_end = y_start;
+    x_end =x_start + fdf->step;
+    rotate_x = x_start;
+    rotate_y = y_start;
+    rotate_z = z;
+    rotate_z_next = next_z;
+
+    if (fdf->dimension == 'x')
+    {
+        x_rotate(&y_end, &rotate_z_next, fdf);
+        x_rotate(&rotate_y, &rotate_z,fdf);
+    }
+    else if (fdf->dimension == 'y')
+    {
+        y_rotate(&x_end, &rotate_z_next, fdf);
+        y_rotate(&rotate_x, &rotate_z, fdf);
+    }
+    else if (fdf->dimension == 'z')
+    {
+        z_rotate(&x_end, &y_end, fdf);
+        z_rotate(&rotate_x, &rotate_y, fdf);
+    }
+   // iso(&x_end, &y_end, rotate_z_next);
+  // iso(&rotate_x, &rotate_y, rotate_z);
+
+    make_line(rotate_x, rotate_y, x_end, y_end, fdf->img_data,0x9b30ff);
+}
+
+void    make_vertical_line(t_fdf *fdf, int x_start, int y_start, int z, int next_z)
+{
+    int y_end;
+    int x_end;
+    int rotate_x;
+    int rotate_y;
+    int rotate_z;
+    int rotate_z_next;
+
+    y_end = y_start + fdf->step;
+    x_end =x_start;
+    rotate_x = x_start;
+    rotate_y = y_start;
+    rotate_z = z;
+    rotate_z_next = next_z;
+
+    if (fdf->dimension == 'x')
+    {
+        x_rotate(&y_end, &rotate_z_next, fdf);
+        x_rotate(&rotate_y, &rotate_z,fdf);
+    }
+    else if (fdf->dimension == 'y')
+    {
+        y_rotate(&x_end, &rotate_z_next, fdf);
+        y_rotate(&rotate_x, &rotate_z, fdf);
+    }
+    else if (fdf->dimension == 'z')
+    {
+        z_rotate(&x_end, &y_end, fdf);
+        z_rotate(&rotate_x, &rotate_y, fdf);
+    }
+    //iso(&x_end, &y_end, rotate_z_next);
+   // iso(&rotate_x, &rotate_y, rotate_z);
+    make_line(rotate_x, rotate_y, x_end, y_end, fdf->img_data,0xff7f);
+}
+
+void    print_2d_arr(int  **arr, int cols, int rows)
+{
+    int i;
+    int j;
+
+    i = 0;
+    while (i < cols)
+    {
+        j = 0;
+        while (j < rows)
+        {
+            printf("%i ", arr[i][j]);
+            j++;
+        }
+        i++;
+        printf("\n");
+    }
+}
+
+
+/*
+void    draw_all(t_fdf *fdf, int cols, int rows)
+{
+    int x_start = fdf->x_start;
+    int y_start = fdf->y_start;
+    int		i;
+    int		j;
+    int     x_temp;
+    x_temp = x_start;
+    i = 0;
+    while (i < cols)
+    {
+        j = 0;
+        while (j < rows && (i + 1 < rows) && (j + 1) < rows)
+        {
+            make_horizontal_line(fdf,x_start,y_start,fdf->array[i][j], fdf->array[i][j+ 1]);//violet
+            make_vertical_line(fdf, x_start, y_start, fdf->array[i][j], fdf->array[i + 1][j]);//green
+            j++;
+            x_start+=fdf->step;
+           make_vertical_line(fdf, x_start, y_start, fdf->array[i][j], fdf->array[i + 1][j]);//green
+        }
+       x_start = x_temp;
+       y_start+=fdf->step;
+       i++;
+    }
+    j = 0;
+    i--;
+    y_start-=fdf->step;
+   while (j+1 < rows)
+    {
+        make_horizontal_line(fdf,x_start,y_start,fdf->array[i][j], fdf->array[i][j+1]);//violet
+        j++;
+        x_start+=fdf->step;
+    }
+    mlx_put_image_to_window(fdf->mlx_ptr,fdf->win_ptr,fdf->img_ptr,0,0);
+}*/
+int     **create_2d_int_arr(int cols, int rows)
+{
+    int **result;
+    int i;
+    int j;
+    i = 0;
+    if (!(result = (int **)ft_memalloc(sizeof(int *) * (size_t)cols + 1)))
+        return (NULL);
+    while (i < cols)
+    {
+        j = 0;
+        if (!(result[i] = (int *)ft_memalloc(sizeof(int) * (size_t)rows + 1)))
+            return (NULL);
+        while (j < rows)
+        {
+            result[i][j] = 0;
+            j++;
+        }
+        i++;
+    }
+    result[i] = NULL;
+    return (result);
+}
+/*
+void       draw_all2(t_fdf *fdf, int cols, int rows)
+{
+    int x_start = fdf->x_start;
+    int y_start = fdf->y_start;
+    int i;
+    int j;
+    i = 0;
+    j = 0;
+    while (i < cols)//i < cols +1
+    {
+        printf("!\n");
+        j = 0;
+        while (j < rows)//j <= rows
+        {
+            if (j - 1 < rows)//j - 1 < rows
+                printf("(m) z is: %i\n", fdf->array[i][j]);
+            if (j + 1 < rows)//j + 1 <= rows
+            {
+                //printf("(v) z-> is: %i\n", fdf->array[i][j]);
+                make_horizontal_line(fdf,x_start, y_start, fdf->array[i][j],fdf->array[i][j + 1]);
+                //make_line(x_start,y_start,x_start+fdf->step,y_start,fdf->img_data, 0xdda0dd);
+            }
+            if (i + 1 < cols)//i + 1 <= cols
+            {
+                //printf("(h) z-> is: %i\n", fdf->array[i + 1][j]);
+                make_vertical_line(fdf,x_start,y_start,fdf->array[i][j],fdf->array[i + 1][j]);
+                //make_line(x_start,y_start,x_start,y_start+fdf->step,fdf->img_data, 0xff4500);
+            }
+            x_start+=fdf->step;
+            j++;
+        }
+        x_start = fdf->x_start;
+        y_start+=fdf->step;
+        i++;
+    }
+    mlx_put_image_to_window(fdf->mlx_ptr,fdf->win_ptr,fdf->img_ptr,0,0);
+}
+*/
+void       draw_all2(t_fdf *fdf, int cols, int rows)
+{
+   int x_start = fdf->x_start;
+   int y_start = fdf->y_start;
+   int x;
+   int y;
+   y = 0;
+   while (y < cols)//i < cols +1
+   {
+       //printf("!\n");
+       x = 0;
+       while (x < rows)//j <= rows
+       {
+           if (x < rows - 1)//j + 1 <= rows
+           {
+            //    printf("(v) z-> is: %i\n", fdf->array[y][x]);
+               make_horizontal_line(fdf,x_start, y_start, fdf->array[y][x],fdf->array[y][x + 1]);
+               //make_line(x_start,y_start,x_start+fdf->step,y_start,fdf->img_data, 0xdda0dd);
+           }
+           if (y < cols - 1)//i + 1 <= cols
+           {
+            //    printf("(h) z-> is: %i\n", fdf->array[y + 1][x]);
+                make_vertical_line(fdf,x_start,y_start,fdf->array[y][x],fdf->array[y + 1][x]);
+               //make_line(x_start,y_start,x_start,y_start+fdf->step,fdf->img_data, 0xff4500);
+           }
+           x_start+=fdf->step;
+           x++;
+       }
+       x_start = fdf->x_start;
+       y_start+=fdf->step;
+       y++;
+   }
+   mlx_put_image_to_window(fdf->mlx_ptr,fdf->win_ptr,fdf->img_ptr,0,0);
+}
+
+void    create_fdf_data(t_fdf *fdf, int step, int width, int height)
+{
+    void    *win_ptr;
+    int     *img_data;
+    void    *img_ptr;
+
+    fdf->step =step;
+    win_ptr = mlx_new_window(fdf->mlx_ptr, width, height, "little_cat");//создаем новое окно
+    fdf->win_ptr = win_ptr;
+    img_ptr = mlx_new_image(fdf->mlx_ptr,width, height);
+    fdf->img_ptr = img_ptr;
+    img_data = (int *)mlx_get_data_addr(img_ptr, &(fdf->bpp), &(fdf->size_line), &(fdf->endian));
+    fdf->img_data = img_data;
+    fdf->x_start = 500;
+    fdf->y_start = 200;
+}
+
+int key_press(int keycode, t_fdf *fdf)//закрывает окошко пр  нажатии клавиши еск.Возможно нужно переделать
+{
+    fdf->colors=0;
+    if(keycode == 53)//esc
+    {
+     //   printf(" esc! ");
+        exit(0);
+    }
+/*
+    if(keycode == 124)//стрелка вправо
+    {
+     //   printf(" right! ");
+        erace_img(fdf);
+        fdf->x_start+=10;
+        draw_all(fdf, 4,4);
+    }
+    if(keycode == 126)//стрелка вниз
+    {
+     //   printf(" down! ");
+        erace_img(fdf);
+        fdf->y_start+=10;
+        draw_all(fdf, 4,4);
+    }
+    if(keycode == 123)//стрелка влево
+    {
+      //  printf(" left! ");
+        erace_img(fdf);
+        fdf->x_start-=10;
+        draw_all(fdf, 4,4);
+    }
+    if(keycode == 125)//стрелка вверх
+    {
+      //  printf(" up! ");
+        erace_img(fdf);
+        fdf->y_start-=10;
+        draw_all(fdf, 4,4);
+    }
+    if (keycode == 88)//num6  для поворота по Х
+    {
+     //   printf(" x_d! ");
+        erace_img(fdf);
+        fdf->dimension = 'x';
+        draw_all(fdf, 4,4);
+       fdf->dimension = 'i';
+    }
+    if (keycode == 91)//num2  для поворота по У
+    {
+     //   printf(" y_d! ");
+        erace_img(fdf);
+        fdf->dimension = 'y';
+        draw_all(fdf, 4,4);
+        fdf->dimension = 'i';
+    }
+    if (keycode == 87)//num5  для поворота по Z
+    {
+       // printf(" z_d! ");
+        erace_img(fdf);
+        fdf->dimension = 'z';
+        draw_all(fdf, 4,4);
+        fdf->dimension = 'i';
+    }*/
+    return (0);
+}
+
+int		main()
+{
+    void    *mlx_ptr;
+    t_fdf   *fdf;
+
+   // if (ac == 2)
+   // {
+        fdf = ft_memalloc(sizeof(t_fdf));
+        mlx_ptr = mlx_init();//инициализируем
+        fdf->mlx_ptr = mlx_ptr;
+        int    **test_arr2 = create_2d_int_arr(6, 4);
+
+        //test_arr2[2][2] = 80;
+        //test_arr2[2][3] = 50;
+        test_arr2[1][1] = 80;
+        test_arr2[1][2] = 80;
+    //test_arr2[2][1] = 80;
+
+
+
+        print_2d_arr(test_arr2, 6,4);
+        fdf->array = test_arr2;
+        create_fdf_data(fdf,50,1000,1000);
+        //draw_all(fdf, 4,4);
+        draw_all2(fdf, 6,4);
+        mlx_hook(fdf->win_ptr,2, 0, key_press, fdf);//отлавливаем нажатие клавиш
+        mlx_loop(fdf->mlx_ptr);
+  //  }
+    //почистить фдф и массив
+    return (0);
 }
