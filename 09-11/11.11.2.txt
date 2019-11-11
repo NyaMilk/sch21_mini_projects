@@ -1,0 +1,826 @@
+
+#ifndef FDF_H
+# define FDF_H
+# include <stdlib.h>
+# include <stdio.h>
+# include <unistd.h>
+# include <math.h>
+# include <fcntl.h>
+# include "../minilibx_macos/mlx.h"
+# include "../libft/libft.h"
+# include "../libft/get_next_line.h"
+# include "./mlx_keys.h"
+
+# define ABS(Value) (Value < 0) ? (-Value) : (Value)
+# define WIDTH  	2560
+# define HEIGHT 	1480
+
+typedef struct		s_mtx
+{
+	int				**map;
+	int				**color;
+	int				width;
+	int				height;
+	int				scale;
+}					t_mtx;
+
+typedef struct		s_img
+{
+	void			*ptr;
+	void			*px;
+	int				lsize;
+}					t_img;
+
+typedef	union		u_color
+{
+	int				mono;
+	unsigned char	rgb[4];
+}					t_color;
+
+typedef	struct		s_pt
+{
+	int				x;
+	int				y;
+	int				z;
+	t_color			color;
+}					t_pt;
+
+typedef struct		s_view
+{
+	float			offsetx;
+	float			offsety;
+	float			hz;
+	float			scale;
+	int				clr;
+	void			(*line)(t_pt st, t_pt end, t_img *img);
+}					t_view;
+
+typedef struct		s_bres
+{
+	int				signx;
+	int				signy;
+	int				dx;
+	int				dy;
+	int				err[2];
+}					t_bres;
+
+typedef struct		s_mlx
+{
+	void			*iptr;
+	void			*wptr;
+	t_img			*img;
+	t_view			*view;
+	t_mtx			*mtx;
+	t_pt			*(*proj)(t_pt *pt, t_view *view);
+}					t_mlx;
+
+double				percent(int start, int end, int current);
+void				err_handle(char *reason);
+void				set_default(t_mlx *mlx);
+void				draw_line(t_pt p1, t_pt p2, t_img *img);
+void				dot_draw(t_pt p1, t_pt p2, t_img *img);
+void				parse(t_mtx *mtx, const char *f_name);
+int					atoi_move(char **str);
+unsigned long		atoi_move_hex(char **str);
+void				draw(t_mtx *mtx, t_mlx *mlx);
+void				flush_img(t_img *img);
+void				del_img(t_mlx *mlx);
+void				do_init(t_mlx *mlx);
+void				purge(t_mlx *mlx);
+t_pt				*iso(t_pt *pt, t_view *view);
+void				put_pixel_to_img(t_img *img, int x, int y, int color);
+void				bresenham(t_pt start, t_pt end, t_img *img);
+t_img				*create_img(t_mlx *mlx);
+t_pt				*parallel(t_pt *pt, t_view *view);
+void				set_default(t_mlx *mlx);
+void				*ft_iarrdel(void **res, int y);
+
+#endif
+
+2
+
+#ifndef MLX_KEYS_H
+# define MLX_KEYS_H
+# define KEY_ESCAPE         53
+# define KEY_F1             122
+# define KEY_F2             120
+# define KEY_F3             99
+# define KEY_F4             118
+# define KEY_F5             96
+# define KEY_F6             97
+# define KEY_F7             98
+# define KEY_F8             100
+# define KEY_F9             101
+# define KEY_F10            109
+# define KEY_F11            103
+# define KEY_F12            111
+# define KEY_F13            105
+# define KEY_F14            107
+# define KEY_F15            113
+# define KEY_F16            106
+# define KEY_F17            64
+# define KEY_F18            79
+# define KEY_F19            80
+# define KEY_TILDE          50
+# define KEY_1              18
+# define KEY_2              19
+# define KEY_3              20
+# define KEY_4              21
+# define KEY_5              23
+# define KEY_6              22
+# define KEY_7              26
+# define KEY_8              28
+# define KEY_9              25
+# define KEY_0              29
+# define KEY_MINUS          27
+# define KEY_EQUAL          24
+# define KEY_BACKSPACE      51
+# define KEY_TAB            48
+# define KEY_Q              12
+# define KEY_W              13
+# define KEY_E              14
+# define KEY_R              15
+# define KEY_T              17
+# define KEY_Y              16
+# define KEY_U              32
+# define KEY_I              34
+# define KEY_O              31
+# define KEY_P              35
+# define KEY_OPEN_BRACKET   33
+# define KEY_OPEN_BRACE     33
+# define KEY_CLOSE_BRACKET  30
+# define KEY_CLOSE_BRACE    30
+# define KEY_BACKSLASH      42
+# define KEY_PIPE           42
+# define KEY_CAPSLOCK       272
+# define KEY_A              0
+# define KEY_S              1
+# define KEY_D              2
+# define KEY_F              3
+# define KEY_G              5
+# define KEY_H              4
+# define KEY_J              38
+# define KEY_K              40
+# define KEY_L              37
+# define KEY_COLON          41
+# define KEY_SEMI_COLON     41
+# define KEY_SIMPLE_QUOTE   39
+# define KEY_DOUBLE_QUOTES  39
+# define KEY_ENTER          36
+# define KEY_SHIFT_LEFT     257
+# define KEY_Z              6
+# define KEY_X              7
+# define KEY_C              8
+# define KEY_V              9
+# define KEY_B              11
+# define KEY_N              45
+# define KEY_M              46
+# define KEY_LESS_THAN      43
+# define KEY_COMMA          43
+# define KEY_GREATER_THAN   47
+# define KEY_DOT            47
+# define KEY_SLASH          44
+# define KEY_QUESTION_MARK  44
+# define KEY_SHIFT_RIGHT    258
+# define KEY_CTRL_LEFT      256
+# define KEY_COMMAND_LEFT   259
+# define KEY_OPTION_LEFT    261
+# define KEY_ALT            261
+# define KEY_SPACEBAR       49
+# define KEY_COMMAND_RIGHT  260
+# define KEY_ALT_GR         262
+# define KEY_FN             279
+# define KEY_CTRL_RIGHT     269
+# define KEY_LEFT           123
+# define KEY_DOWN           125
+# define KEY_RIGHT          124
+# define KEY_UP             126
+# define KEY_DEL            117
+# define KEY_HOME           115
+# define KEY_END            119
+# define KEY_PAGE_UP        116
+# define KEY_PAGE_DOWN      121
+# define KEY_CLEAR          71
+# define KEY_PAD_1          83
+# define KEY_PAD_2          84
+# define KEY_PAD_3          85
+# define KEY_PAD_4          86
+# define KEY_PAD_5          87
+# define KEY_PAD_6          88
+# define KEY_PAD_7          89
+# define KEY_PAD_8          91
+# define KEY_PAD_9          92
+# define KEY_PAD_0          82
+# define KEY_PAD_EQUAL      81
+# define KEY_PAD_DIVIDE     75
+# define KEY_PAD_MULTIPLY   67
+# define KEY_PAD_SUB        78
+# define KEY_PAD_ADD        69
+# define KEY_PAD_ENTER      76
+# define KEY_PAD_DOT        65
+
+#endif
+
+xiaolin
+#include "fdf.h"
+
+#define NLL	18446744073709551616.0
+#define NL	(1LL << 56)
+
+void	line(t_pt *p1, t_pt *p2, t_img *img)
+{
+	unsigned long long	d;
+	unsigned long long	df;
+	int					i;
+
+	d = 0;
+	i = (p2->y < p1->y) ? -1 : 1;
+	df = floor((double)(p2->y - p1->y) / (p2->x - p1->x) * NLL * i + 0.5);
+	put_pixel_to_img(img, p1->x++, p1->y, p1->color.mono);
+	put_pixel_to_img(img, p2->x--, p2->y, p1->color.mono);
+	while (p1->x <= p2->x)
+	{
+		if ((d += df) < df)
+		{
+			p1->y += i;
+			p2->y -= i;
+		}
+		(p1->color.rgb)[3] = d / NL;
+		put_pixel_to_img(img, p1->x, p1->y, p1->color.mono);
+		put_pixel_to_img(img, p2->x, p2->y, p1->color.mono);
+		(p1->color.rgb)[3] = ~(p1->color.rgb)[3];
+		put_pixel_to_img(img, p1->x, (p1->y + i), p1->color.mono);
+		put_pixel_to_img(img, p2->x, (p2->y - i), p1->color.mono);
+		++p1->x;
+		--p2->x;
+	}
+}
+
+void	steep_line(t_pt *p1, t_pt *p2, t_img *img)
+{
+	unsigned long long	d;
+	unsigned long long	df;
+	int					i;
+
+	d = 0;
+	i = (p2->x < p1->x) ? -1 : 1;
+	df = floor((double)(p2->x - p1->x) / (p2->y - p1->y) * NLL * i + 0.5);
+	put_pixel_to_img(img, p1->x, p1->y++, p1->color.mono);
+	put_pixel_to_img(img, p2->x, p2->y--, p1->color.mono);
+	while (p1->y <= p2->y)
+	{
+		if ((d += df) < df)
+		{
+			p1->x += i;
+			p2->x -= i;
+		}
+		(p1->color.rgb)[3] = d / NL;
+		put_pixel_to_img(img, p1->x, p1->y, p1->color.mono);
+		put_pixel_to_img(img, p2->x, p2->y, p1->color.mono);
+		(p1->color.rgb)[3] = ~(p1->color.rgb)[3];
+		put_pixel_to_img(img, (p1->x + i), p1->y, p1->color.mono);
+		put_pixel_to_img(img, (p2->x - i), p2->y, p1->color.mono);
+		++p1->y;
+		--p2->y;
+	}
+}
+
+void	diagonal(t_pt *p1, t_pt *p2, t_img *img)
+{
+	int	df;
+
+	df = (p2->y < p1->y) ? -1 : 1;
+	while (p1->x <= p2->x)
+	{
+		put_pixel_to_img(img, p1->x, p1->y, p1->color.mono);
+		put_pixel_to_img(img, p2->x, p2->y, p1->color.mono);
+		++p1->x;
+		--p2->x;
+		p1->y += df;
+		p2->y -= df;
+	}
+}
+
+void	draw_line(t_pt p1, t_pt p2, t_img *img)
+{
+	int	dy;
+	int	dx;
+
+	dy = abs(p2.y - p1.y);
+	dx = abs(p2.x - p1.x);
+	if (dy > dx)
+	{
+		if (p2.y < p1.y)
+			steep_line(&p2, &p1, img);
+		else
+			steep_line(&p1, &p2, img);
+	}
+	else
+	{
+		if (p2.x < p1.x)
+			(dy != dx ? line : diagonal)(&p2, &p1, img);
+		else
+			(dy != dx ? line : diagonal)(&p1, &p2, img);
+	}
+}
+
+support
+#include "fdf.h"
+
+static int		low_alpha(char c)
+{
+	if (c >= 'a' && c <= 'f')
+		return (1);
+	else
+		return (0);
+}
+
+static int		big_alpha(char c)
+{
+	if (c >= 'A' && c <= 'F')
+		return (1);
+	else
+		return (0);
+}
+
+static int		is_number(char c)
+{
+	if (c >= '0' && c <= '9')
+		return (1);
+	else
+		return (0);
+}
+
+unsigned long	atoi_move_hex(char **str)
+{
+	unsigned long a;
+
+	a = 0;
+	while ((**str >= 9 && **str <= 13) || **str == ' ')
+		(*str)++;
+	if (**str == '0' && (*(*str + 1) == 'x' || *(*str + 1) == 'X'))
+		(*str) += 2;
+	if (!is_number(**str) && !low_alpha(**str) && !big_alpha(**str))
+		return (0);
+	while (is_number(**str) || low_alpha(**str) || big_alpha(**str))
+	{
+		if (low_alpha(**str))
+			a = (is_number(**str)) ? \
+				a * 16 + (*(*str)++ - 48) : a * 16 + (*(*str)++ + 10 - 'a');
+		else
+			a = (is_number(**str)) ? \
+				a * 16 + (*(*str)++ - 48) : a * 16 + (*(*str)++ + 10 - 'A');
+	}
+	return (a);
+}
+
+int				atoi_move(char **str)
+{
+	int					sign;
+	int					len;
+	unsigned long long	num;
+
+	num = 0;
+	while (!(len = 0) && ft_isspace(**str))
+		(*str)++;
+	sign = (**str == '-') ? -1 : 1;
+	(**str == '-' || **str == '+') ? (*str)++ : *str;
+	while (**str == '0')
+		(*str)++;
+	while (ft_isdigit(**str) && (++len < 21))
+		num = num * 10 + (*((*str)++) - '0');
+	if (sign > 0 && (len > 19 || num > 9223372036854775807))
+		return (-1);
+	if (sign < 0 && (len > 19 || num > 9223372036854775808ULL))
+		return (0);
+	return (sign * num);
+}
+
+parse
+#include "fdf.h"
+
+void	get_size(t_mtx *mtx, int fd)
+{
+	char	*line;
+	int		len;
+	int		gnl;
+
+	len = 0;
+	while ((gnl = get_next_line(fd, &line)))
+	{
+		if (gnl == -1)
+			err_handle("Invalid file.\n");
+		(mtx->height)++;
+		len += ft_wcount(line, ' ');
+		free(line);
+	}
+	if (!len)
+		err_handle("Invalid file.\n");
+	mtx->width += len / mtx->height;
+}
+
+void	save_data(t_mtx *mtx, char **line)
+{
+	int		*itmp;
+	int		*ctmp;
+
+	itmp = *(mtx->map);
+	ctmp = *(mtx->color);
+	while (**line)
+	{
+		**mtx->map = atoi_move(line);
+		(*(mtx->map))++;
+		if (**line == ',')
+		{
+			(*line)++;
+			**mtx->color = (int)atoi_move_hex(line);
+		}
+		else if (**line != ',')
+			**mtx->color = 0xffffff;
+		(*(mtx->color))++;
+	}
+	*(mtx->map) = itmp;
+	*(mtx->color) = ctmp;
+}
+
+void	parse_file(t_mtx *mtx, int fd)
+{
+	char	*line;
+	char	*tmp;
+	int		gnl;
+
+	while ((gnl = get_next_line(fd, &line)))
+	{
+		tmp = line;
+		if (gnl == -1)
+			err_handle("Invalid file.\n");
+		if (!(*(mtx->map) = (int*)malloc(sizeof(int) * mtx->width)))
+		{
+			ft_arrdel((void**)(mtx->map));
+			exit(1);
+		}
+		if (!(*(mtx->color) = (int*)malloc(sizeof(int) * mtx->width)))
+		{
+			ft_arrdel((void**)(mtx->color));
+			err_handle("Usage: ./fdf *.fdf\n");
+		}
+		save_data(mtx, &line);
+		free(tmp);
+		(mtx->map)++;
+		(mtx->color)++;
+	}
+}
+
+void	parse(t_mtx *mtx, const char *f_name)
+{
+	int		fd;
+	int		**tmp;
+	int		**ctmp;
+
+	if ((fd = open(f_name, O_RDONLY)) < 0)
+		err_handle("Error opennig file\n");
+	mtx->height = 0;
+	mtx->width = 0;
+	get_size(mtx, fd);
+	close(fd);
+	if (!(mtx->map = (int**)malloc(sizeof(int *) * mtx->height)))
+		exit(1);
+	if (!(mtx->color = (int**)malloc(sizeof(int *) * mtx->height)))
+		exit(1);
+	tmp = mtx->map;
+	ctmp = mtx->color;
+	if ((fd = open(f_name, O_RDONLY)) < 0)
+		err_handle("Error openning file\n");
+	parse_file(mtx, fd);
+	close(fd);
+	mtx->map = tmp;
+	mtx->color = ctmp;
+}
+
+lines
+#include "../inc/fdf.h"
+
+double	percent(int start, int end, int current)
+{
+	double placement;
+	double distance;
+
+	placement = current - start;
+	distance = end - start;
+	return ((distance == 0) ? 1.0 : (placement / distance));
+}
+
+int		get_light(int start, int end, double percentage)
+{
+	return ((int)((1 - percentage) * start + percentage * end));
+}
+
+int		get_color(t_pt current, t_pt start, t_pt end, t_bres br)
+{
+	int		red;
+	int		green;
+	int		blue;
+	double	percentage;
+
+	if (current.color.mono == end.color.mono)
+		return (current.color.mono);
+	percentage = (br.dx > br.dy) ? percent(start.x, end.x, current.x) :
+		percent(start.y, end.y, current.y);
+	red = get_light((start.color.mono >> 16) & 0xFF, \
+			(end.color.mono >> 16) & 0xFF, percentage);
+	green = get_light((start.color.mono >> 8) & 0xFF, \
+			(end.color.mono >> 8) & 0xFF, percentage);
+	blue = get_light(start.color.mono & 0xFF, \
+			end.color.mono & 0xFF, percentage);
+	return ((red << 16) | (green << 8) | blue);
+}
+
+void	br_init(t_pt start, t_pt end, t_bres *br, t_pt *current)
+{
+	br->dy = ABS(end.y - start.y);
+	br->dx = ABS(end.x - start.x);
+	br->signx = (start.x < end.x) ? 1 : -1;
+	br->signy = (start.y < end.y) ? 1 : -1;
+	br->err[0] = (br->dx > br->dy ? br->dx : -br->dy) / 2;
+	current->x = start.x;
+	current->y = start.y;
+}
+
+void	bresenham(t_pt start, t_pt end, t_img *img)
+{
+	t_bres	br;
+	t_pt	current;
+
+	br_init(start, end, &br, &current);
+	put_pixel_to_img(img, end.x, end.y, end.color.mono);
+	while (current.x != end.x || current.y != end.y)
+	{
+		if (current.x < 0 || current.x >= WIDTH
+			|| current.y < 0 || current.y >= HEIGHT)
+			break ;
+		put_pixel_to_img(img, current.x, current.y, \
+				get_color(current, start, end, br));
+		br.err[1] = br.err[0];
+		if (br.err[1] > -br.dx)
+		{
+			br.err[0] -= br.dy;
+			current.x += br.signx;
+		}
+		if (br.err[1] < br.dy)
+		{
+			br.err[0] += br.dx;
+			current.y += br.signy;
+		}
+	}
+}
+
+image
+#include "fdf.h"
+
+void	del_img(t_mlx *mlx)
+{
+	if (mlx->img->ptr != NULL)
+		mlx_destroy_image(mlx->iptr, mlx->img->ptr);
+	ft_memdel((void**)&(mlx->img));
+}
+
+void	flush_img(t_img *img)
+{
+	ft_bzero(img->px, WIDTH * HEIGHT * sizeof(unsigned int));
+}
+
+t_img	*create_img(t_mlx *mlx)
+{
+	int bpp;
+	int endi;
+
+	if (!(mlx->img = malloc(sizeof(t_img))))
+		return (NULL);
+	if (!(mlx->img->ptr = mlx_new_image(mlx->iptr, WIDTH, HEIGHT)))
+	{
+		del_img(mlx);
+		return (NULL);
+	}
+	mlx->img->px = mlx_get_data_addr(mlx->img->ptr, \
+						&bpp, &mlx->img->lsize, &endi);
+	mlx->img->lsize = mlx->img->lsize / sizeof(unsigned int);
+	return (mlx->img);
+}
+
+void	put_pixel_to_img(t_img *img, int x, int y, int color)
+{
+	if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
+		return ;
+	((int*)img->px)[x + (y * img->lsize)] = color;
+}
+
+fdf
+#include "fdf.h"
+
+void	key_action(int key, t_mlx *mlx)
+{
+	if (key == KEY_RIGHT)
+		mlx->view->offsetx += 10;
+	if (key == KEY_LEFT)
+		mlx->view->offsetx -= 10;
+	if (key == KEY_P && (mlx->proj != parallel))
+		mlx->proj = parallel;
+	if (key == KEY_I && (mlx->proj != iso))
+		mlx->proj = iso;
+	if (key == KEY_D && (mlx->view->line != dot_draw))
+		mlx->view->line = dot_draw;
+	if (key == KEY_X && (mlx->view->line != draw_line))
+		mlx->view->line = draw_line;
+	if (key == KEY_MINUS)
+		mlx->view->scale += 0.005;
+	if (key == KEY_EQUAL && mlx->view->scale > 0.010)
+		mlx->view->scale -= 0.005;
+	if (key == KEY_PAD_SUB)
+		mlx->view->hz -= 0.05;
+	if (key == KEY_PAD_ADD)
+		mlx->view->hz += 0.05;
+	if (key == KEY_C)
+		mlx->view->clr *= -1;
+	if (key == KEY_R)
+		set_default(mlx);
+}
+
+int		key_press(int key, t_mlx *mlx)
+{
+	if (key == KEY_ESCAPE)
+	{
+		purge(mlx);
+		ft_iarrdel((void**)mlx->mtx->map, mlx->mtx->height);
+		ft_iarrdel((void**)mlx->mtx->color, mlx->mtx->height);
+		exit(1);
+	}
+	if (key == KEY_UP || key == KEY_DOWN || key == KEY_RIGHT || key == KEY_LEFT
+		|| key == KEY_P || key == KEY_I || key == KEY_D || key == KEY_X
+		|| key == KEY_MINUS || key == KEY_EQUAL || key == KEY_PAD_SUB
+		|| key == KEY_PAD_ADD || key == KEY_C || key == KEY_R)
+	{
+		if (key == KEY_UP)
+			mlx->view->offsety -= 10;
+		if (key == KEY_DOWN)
+			mlx->view->offsety += 10;
+		key_action(key, mlx);
+		draw(mlx->mtx, mlx);
+	}
+	return (0);
+}
+
+int		main(int ac, char **av)
+{
+	t_mtx	mtx;
+	t_mlx	mlx;
+
+	if (ac == 2)
+	{
+		parse(&mtx, av[1]);
+		do_init(&mlx);
+		mtx.scale = 10;
+		mlx.mtx = &mtx;
+		draw(&mtx, &mlx);
+		mlx_hook(mlx.wptr, 2, 0, key_press, &mlx);
+		mlx_loop(mlx.iptr);
+	}
+	else
+		err_handle("Usage: ./fdf *.fdf\n");
+	return (0);
+}
+
+void	err_handle(char *reason)
+{
+	ft_putstr_fd(reason, 2);
+	exit(1);
+}
+
+draw
+#include "fdf.h"
+
+t_pt	*iso(t_pt *pt, t_view *view)
+{
+	float previous_x;
+	float previous_y;
+
+	previous_x = pt->x;
+	previous_y = pt->y;
+	pt->x = view->offsetx + ((previous_x - previous_y) *
+			cos(M_PI / 6) / view->scale);
+	pt->y = view->offsety + (((previous_x + previous_y) *
+				sin(M_PI / 6) - (pt->z * view->hz)) / view->scale);
+	return (pt);
+}
+
+t_pt	*parallel(t_pt *pt, t_view *view)
+{
+	pt->x = view->offsetx + (pt->x - pt->z * view->hz) / view->scale;
+	pt->y = view->offsety + (pt->y - pt->z * view->hz) / view->scale;
+	return (pt);
+}
+
+t_pt	*get_pt(t_pt *pt, t_mlx *mlx, int x, int y)
+{
+	pt->x = x;
+	pt->y = y;
+	pt->z = mlx->mtx->map[y][x];
+	if (mlx->view->clr == -1)
+	{
+		if (ceil(pt->z * mlx->view->hz) > 0)
+			pt->color.mono = 0xff0000;
+		else if ((pt->z * mlx->view->hz) < 0)
+			pt->color.mono = 0x0000ff;
+		else if (ceil(pt->z * mlx->view->hz) == 0)
+			pt->color.mono = 0x00ffff;
+	}
+	else
+		pt->color.mono = mlx->mtx->color[y][x];
+	return (pt);
+}
+
+void	dot_draw(t_pt p1, t_pt p2, t_img *img)
+{
+	put_pixel_to_img(img, p1.x, p1.y, p1.color.mono);
+	put_pixel_to_img(img, p2.x, p2.y, p2.color.mono);
+}
+
+void	draw(t_mtx *mtx, t_mlx *mlx)
+{
+	int			x;
+	int			y;
+	t_pt		st;
+	t_pt		end;
+
+	flush_img(mlx->img);
+	mlx_clear_window(mlx->iptr, mlx->wptr);
+	y = -1;
+	while (++y < mtx->height)
+	{
+		x = -1;
+		while (++x < mtx->width)
+		{
+			st = *mlx->proj(get_pt(&st, mlx, x, y), mlx->view);
+			if (x + 1 < mtx->width)
+				mlx->view->line(st, *mlx->proj(get_pt(&end, mlx, x + 1, y),
+							mlx->view), mlx->img);
+			if (y + 1 < mtx->height)
+				mlx->view->line(st, *mlx->proj(get_pt(&end, mlx, x, y + 1),
+							mlx->view), mlx->img);
+		}
+	}
+	mlx_put_image_to_window(mlx->iptr, mlx->wptr, mlx->img->ptr, 0, 0);
+}
+
+do_init
+#include "fdf.h"
+
+void	*ft_iarrdel(void **res, int y)
+{
+	void	**tmp;
+
+	tmp = res;
+	while (y)
+	{
+		free(*res++);
+		y--;
+	}
+	free(tmp);
+	tmp = NULL;
+	return (tmp);
+}
+
+void	purge(t_mlx *mlx)
+{
+	if (!(mlx->iptr))
+		mlx_destroy_window(mlx->iptr, mlx->wptr);
+	if (!(mlx->view))
+		ft_memdel((void**)&(mlx->view));
+	if (!(mlx->img))
+		del_img(mlx);
+}
+
+void	set_default(t_mlx *mlx)
+{
+	mlx->view->offsetx = WIDTH / 2;
+	mlx->view->offsety = HEIGHT / 5;
+	mlx->view->scale = 0.2;
+	mlx->view->clr = 1;
+	mlx->view->hz = 1;
+	mlx->view->line = dot_draw;
+	mlx->proj = iso;
+}
+
+void	do_init(t_mlx *mlx)
+{
+	if (!(mlx->iptr = mlx_init())
+		|| !(mlx->wptr = mlx_new_window(mlx->iptr,
+				WIDTH, HEIGHT, "FDF"))
+		|| !(mlx->view = malloc(sizeof(t_view)))
+		|| !(create_img(mlx)))
+	{
+		purge(mlx);
+		err_handle("Initialization failed!\a");
+	}
+	set_default(mlx);
+}
+
