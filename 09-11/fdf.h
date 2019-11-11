@@ -6,7 +6,7 @@
 /*   By: mgrass <mgrass@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/09 14:22:05 by mgrass            #+#    #+#             */
-/*   Updated: 2019/11/10 19:11:14 by mgrass           ###   ########.fr       */
+/*   Updated: 2019/11/11 15:12:02 by mgrass           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ typedef struct		s_fdf
 	int				y;
 	int				z;
 	int				**map;
-	int				color;
+	int				**color;
 	int				offset_x;
 	int				offset_y;
 	void			*win_ptr;

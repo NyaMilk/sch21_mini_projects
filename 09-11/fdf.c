@@ -6,7 +6,7 @@
 /*   By: mgrass <mgrass@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/11/09 14:21:20 by mgrass            #+#    #+#             */
-/*   Updated: 2019/11/10 19:23:33 by mgrass           ###   ########.fr       */
+/*   Updated: 2019/11/11 15:48:09 by mgrass           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,20 +95,28 @@ int			check_size(t_fdf *lst, char *line)
 	return (1);
 }
 
-void		get_color(char *tmp, t_fdf *lst)
+void		get_color(char *tmp, t_fdf *lst, int x, int y)
 {
 	char	**ptr;
 
+	lst->color = ft_memalloc(sizeof(int *) * lst->y);
+	lst->color[y] = ft_memalloc(sizeof(int) * lst->x);
 	ptr = ft_strsplit(tmp, ',');
 	// printf("split ptr0: %s\n", ptr[0]);
 	// printf("split ptr1: %s\n", ptr[1]);
 	if (ptr[1])
 	{
-		lst->z = ft_atoi(ptr[0]);
 		// printf("->z: %d\n", lst->z);
-		lst->color = ft_atoi_base(ptr[1] + 2, 16);
-		// printf("->color: %d\n", lst->color);
+		lst->color[y][x] = ft_atoi_base(ptr[1] + 2, 16);
+		// printf("->color: %d\n", lst->color[y][x]);
+		free(ptr[1]);
 	}
+	else
+		lst->color[y][x] = 0xffffff;
+	// printf("->color: %d\n", lst->color[y][x]);
+	free(ptr[0]);
+	free(ptr);
+	// фри фри фри
 }
 
 void		create_map(t_fdf *lst)
@@ -127,7 +135,8 @@ void		create_map(t_fdf *lst)
 		// printf("-----\n");
 		while (tmp[x])
 		{
-			get_color(tmp[x], lst);
+			get_color(tmp[x], lst, x, y);
+			printf("c: %d\n", lst->color[y][x]);
 			lst->map[y][x] = ft_atoi(tmp[x]);
 			free(tmp[x++]);
 		}
@@ -198,8 +207,8 @@ int			main(int ac, char **av)
 	//----- удалить -----
 	lst->size_map = 20;
 	
-	draw_map(lst);
 	print_menu(lst);
+	draw_map(lst);
 	mlx_hook(lst->win_ptr, 2, 0, key_press, ((void *)0));
 	mlx_loop(lst->mlx_ptr);
 	return (0);
